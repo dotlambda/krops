@@ -191,14 +191,13 @@ let
   '';
 
   runShell = target: command:
-    if isLocalTarget target
-      then command
-      else
-        if target.sudo then /* sh */ ''
-          ${ssh' target} ${quote target.host} ${quote "sudo bash -c ${quote command}"}
-        '' else ''
-          ${ssh' target} ${quote target.host} ${quote command}
-        '';
+    let
+      command' = if target.sudo then "sudo bash -c ${command}" else command;
+    in if isLocalTarget target
+      then command'
+      else ''
+        ${ssh' target} ${quote target.host} ${quote command'}
+      '';
 
   ssh' = target: concatMapStringsSep " " quote (flatten [
     "${openssh}/bin/ssh"
